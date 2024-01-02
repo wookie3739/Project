@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        
+        *{
+            box-sizing: border-box;
+            background-color: darkslategray;
+        }
+        #wrap{
+            width:500px;
+            height: 700px;
+            margin: 0 auto;
+            /* background-color: red; */
+            /* border:1px solid blue; */
+        }
+        #header{
+            width:100%;
+            height:100px;
+            text-align: center;
+            line-height:100px;
+            font-size:40px;
+            font-weight:bold;
+
+            border-bottom:1px solid lightgray;
+            color: white;
+        }
+        #content{
+            width:100%;
+            height:600px;
+            background-color: yellow;
+            position:relative;
+            margin-top: 10px;
+        }
+        #content div{
+            text-align: center;
+            line-height: 100px;
+            font-size: 75px;
+            font-weight: bold;
+            color: white;
+        }
+        #key{
+            width:1100px;
+            height:350px;
+            margin: 0 auto;
+            background-color: aqua;
+            margin-top: 30px;
+            position: relative;
+            
+        }
+        #key div{
+            position: absolute;
+            width: 156px;
+            height:100px;
+            background-color: lightgray;
+            text-align: center;
+            line-height:100px;
+            font-size: 25px;
+            font-weight: bold;
+        }
+        #key > div:first-child{
+            bottom:28px;
+        }
+        #key #back{
+            right:0;
+            bottom:28px;
+            font-size: 30px;
+        }
+
+    </style>
+    <script src = "./Cell.js"></script>
+    <script src = "./Keyboard.js"></script>
+    <script>
+        let cellArray = []; // 이차원 배열
+        let keyArr = []; // 키보드 이차원 배열
+        let keyArr1 = [];
+        let keyArr2 = [];
+        let keyArr3 = [];
+        let content;
+        let key;
+        let keyboard;
+        // let input_h;
+        let keyString;
+        let keyStringArr = [];
+        let keyStringDblArr = [];
+        // let a = [];
+        let alpabetArray = [
+            ["Q","W","E","R","T","Y","U","I","O","P"],
+            ["A","S","D","F","G","H","J","K","L"],
+            ["Z","X","C","V","B","N","M"]
+        ]; // 키보드 순서대로 Q부터 keyboard에 대입
+        let answer = [
+            "APPLE",
+            "MODEL",
+            "QUEST",
+            "STEAL",
+            "HUMAN"
+        ]; // 이차원 배열 생성
+        let enter;
+        let back;
+        let count = 0;
+        let n = 0;
+
+        function createCell(){
+  
+            for(let i = 0; i < 6; i++){
+                let arr = [];
+                
+                for(let a = 0; a < 5; a++){
+
+                    let cell = new Cell(content, a*100, i*100, 100, 100, "", "blue");
+                    arr.push(cell);
+                }
+                cellArray.push(arr);
+            }
+
+
+            keyArr1 = [];
+            for(let i = 0; i < 10; i++){
+                keyboard = new Keyboard(key, i*(100+11), 0, 100, 100, alpabetArray[0][i], "lightgray");
+                keyboard.div.style.borderRadius = 10 + "%";
+                keyboard.div.style.border = "1px solid lightgray";
+
+                keyArr1.push(keyboard);
+            }
+            keyArr.push(keyArr1);
+
+
+
+            keyArr2 = [];
+            for(let i = 0; i < 9; i++){
+                keyboard = new Keyboard(key, 55 + i*(100+11), (100+11), 100, 100, alpabetArray[1][i], "lightgray");
+                keyboard.div.style.borderRadius = 10 + "%";
+                keyboard.div.style.border = "1px solid lightgray";
+                keyArr2.push(keyboard);
+            }
+            keyArr.push(keyArr2);
+            
+
+
+            keyArr3 = [];
+            for(let i = 0; i < 7; i++){
+                keyboard = new Keyboard(key, 166 + i*(100+11), (200 + 22), 100, 100, alpabetArray[2][i], "lightgray");
+                keyboard.div.style.borderRadius = 10 + "%";
+                keyboard.div.style.border = "1px solid lightgray";
+                keyArr3.push(keyboard);
+            }
+            keyArr.push(keyArr3);
+        }
+        // 1) 키를 눌렀을 때 색상 입혀보기
+        function pressKey(){
+            document.body.addEventListener("keydown", function(e){
+
+                    keyString = e.key.toUpperCase(); // 키 값의 글자를 가지고있음.
+
+            
+                //키 값과 배열 인덱스를 가져오기
+                let pressedKey = getPressedKey(keyArr, keyString);
+
+                // console.log(e.keyCode);
+                // console.log(e.key);
+                if(pressedKey){
+                    pressedKey.div.style.background = "red";
+                }
+                keyStringArr.push(keyString); // 글자를 배열로 담아놓음(CellArr에서 쓰기위해)
+                    
+                        //cellArr이 이차원 배열이라 keyStringArr도 이차원으로 맞춰주자
+                
+                
+                getKeyWord(keyStringArr);
+
+            });
+
+        }
+        // 백스페이스 누르면 화면에서도 지우고 배열에서도 지우고
+        function getBack(){
+            let back = document.getElementById('back');
+            back.addEventListener('click', function(){
+                
+            });
+        }
+
+        function getEnter(){
+            let enter = document.getElementById('enter');
+            enter.addEventListener('click', function(){
+                if(keyStringArr.length % 5 === 0){
+                    alert("진행하세요");
+                    let result = checkWord(); // 정답과 관련있는 단어가 안에 있나 체크하기
+                    updateCellColors(result); // 결과 값으로 색상 변경하기
+
+                }else{
+                    alert("5글자 전부 채워주세요");
+                }
+            });
+        }
+        function checkWord(){
+            let result = {
+                green: 0,
+                yellow: 0,
+                gray: 0
+            };
+            for (let i = 0; i < keyStringArr.length; i++) {
+                let userInput = keyStringArr[i];
+                let answerWord = answer[i];
+
+            if (cellArray[count][i].div.innerText === answerWord) {
+                result.green++;
+            } else if (answer.includes(userInput)) {
+                result.yellow++;
+            } else {
+                result.gray++;
+            }
+        }
+
+            return result;
+        }
+        //글자를 담아놓은 keyStringArr 배열에서 cellArr로 하나씩 뿌리기
+        function getKeyWord(arr){
+            // let word = "";
+            let count = 0;
+            let n = 0;
+
+            for(let i = 0; i < arr.length; i++) {
+
+                cellArray[count][n].div.innerText = arr[i];
+                n++;
+                if(n === 5){
+                    n = 0;
+                    count++;
+                }
+            }
+
+        }
+        function updateCellColors(result) {
+        let count = 0;
+        let n = 0;
+
+        for (let i = 0; i < keyStringArr.length; i++) {
+            let color = "gray";
+
+            if (result.green > 0) {
+                color = "green";
+                result.green--;
+            } else if (result.yellow > 0) {
+                color = "yellow";
+                result.yellow--;
+            }
+
+            cellArray[count][n].div.style.backgroundColor = color;
+
+            n++;
+            if (n === 5) {
+                n = 0;
+                count++;
+            }
+        }
+
+
+            // keyStringArr = [];
+            if(result.green === 5){
+                alert("정답입니다!");
+            }
+    }
+        function getPressedKey(){
+            for(let i = 0; i < keyArr.length; i++){
+                for(let j = 0; j < keyArr[i].length; j++){
+                    if(keyArr[i][j].text === keyString){
+                        // console.log("나 불렀니?");
+                        return keyArr[i][j];
+                    }
+
+
+
+                }
+            }
+        }
+        addEventListener('load', function(){
+            content = document.getElementById('content');
+            key = document.getElementById('key');
+            enter = document.getElementById('enter');
+            back = document.getElementById('back');
+            createCell();
+            pressKey();
+            getEnter();
+            getBack();
+            
+            
+            // container, x, y, width, height, text, bg
+
+        });
+
+
+
+    </script>
+</head>
+<body>
+    <!-- 박스는 5호씩 6층 -->
+    <!-- 키보드는 1층 10개, 2층 9개, 3층 7개 -->
+    <input type="hidden" id = "hidden">
+<div id = "wrap">
+    <div id = "header">Wordle</div>
+    <div id = "content"></div>
+</div>
+    <div id = "key">
+        <div id = "enter">힌트</div>
+        <div id = "back">◁</div>
+    </div>
+
+
+
+</body>
+</html>
