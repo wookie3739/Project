@@ -22,5 +22,5 @@ class Cell{
 
         this.container.appendChild(this.div);
     }
-    
+
 }
